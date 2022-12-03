@@ -137,6 +137,8 @@ These are all the supported operators:
 | `&`, `and` | | left |
 | `xor` | | left |
 | `|`, `or` | | left |
+| `choose`, `nCr` | | left |
+| `permute`, `nPr` | | left |
 | `\ .`, `:`, `=>` | | left |
 | `=` | | left |
 | `;` | lowest | left |
@@ -227,6 +229,17 @@ fend has support for D&D-style dice syntax. For example, `d6` refers to a standa
  12:  2.78%  #####
 > roll(d20 + d6 + 4) # arithmetic operations
 14
+```
+
+## Dates
+
+fend also has built-in syntax for dates:
+
+```
+> @1970-01-01
+Thursday, 1 January 1970
+> @2000-01-01 + 10000 days
+Wednesday, 19 May 2027
 ```
 
 ## Functions and constants
@@ -328,9 +341,9 @@ pi = approx. 3.1415926535
 ## Debug Representation
 
 You can see the debug representation of a value in fend by writing
-`!debug` at the start of your calculation. For example, you can type:
+`@debug` at the start of your calculation. For example, you can type:
 
 ```
-> !debug 1+1
+> @debug 1+1
 2 (unitless) (base 10, auto, simplifiable)
 ```

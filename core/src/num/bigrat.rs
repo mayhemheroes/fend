@@ -1002,6 +1002,20 @@ impl BigRat {
     pub(crate) fn is_definitely_one(&self) -> bool {
         self.sign == Sign::Positive && self.num.is_definitely_one() && self.den.is_definitely_one()
     }
+
+    pub(crate) fn combination<I: Interrupt>(self, rhs: Self, int: &I) -> Result<Self, FendError> {
+        let n_factorial = self.clone().factorial(int)?;
+        let r_factorial = rhs.clone().factorial(int)?;
+        let n_minus_r_factorial = self.add(-rhs, int)?.factorial(int)?;
+        let denominator = r_factorial.mul(&n_minus_r_factorial, int)?;
+        n_factorial.div(&denominator, int)
+    }
+
+    pub(crate) fn permutation<I: Interrupt>(self, rhs: Self, int: &I) -> Result<Self, FendError> {
+        let n_factorial = self.clone().factorial(int)?;
+        let n_minus_r_factorial = self.add(-rhs, int)?.factorial(int)?;
+        n_factorial.div(&n_minus_r_factorial, int)
+    }
 }
 enum NextDigitErr {
     Error(FendError),

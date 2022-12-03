@@ -41,6 +41,7 @@ mod value;
 use std::{collections::HashMap, fmt, io};
 
 use error::FendError;
+pub(crate) use eval::Attrs;
 pub use interrupt::Interrupt;
 use serialize::{deserialize_string, deserialize_usize, serialize_string, serialize_usize};
 

@@ -12,6 +12,7 @@ use crate::{
 pub(crate) fn evaluate_to_value<'a, I: Interrupt>(
     input: &'a str,
     scope: Option<Arc<Scope>>,
+    attrs: Attrs,
     context: &mut crate::Context,
     int: &I,
 ) -> Result<Value, FendError> {
@@ -29,30 +30,57 @@ pub(crate) fn evaluate_to_value<'a, I: Interrupt>(
         tokens.insert(0, lexer::Token::Symbol(lexer::Symbol::OpenParens));
     }
     let parsed = parser::parse_tokens(&tokens)?;
-    let result = ast::evaluate(parsed, scope, context, int)?;
+    let result = ast::evaluate(parsed, scope, attrs, context, int)?;
     Ok(result)
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct Attrs {
+    pub(crate) debug: bool,
+    pub(crate) show_approx: bool,
+    pub(crate) plain_number: bool,
+}
+
+fn parse_attrs(mut input: &str) -> (Attrs, &str) {
+    let mut attrs = Attrs {
+        debug: false,
+        show_approx: true,
+        plain_number: false,
+    };
+    while input.starts_with('@') {
+        if let Some(remaining) = input.strip_prefix("@debug ") {
+            attrs.debug = true;
+            input = remaining;
+        } else if let Some(remaining) = input.strip_prefix("@noapprox ") {
+            attrs.show_approx = false;
+            input = remaining;
+        } else if let Some(remaining) = input.strip_prefix("@plain_number ") {
+            attrs.plain_number = true;
+            input = remaining;
+        } else {
+            break;
+        }
+    }
+    (attrs, input)
 }
 
 /// This also saves the calculation result in a variable `_` and `ans`
 pub(crate) fn evaluate_to_spans<'a, I: Interrupt>(
-    mut input: &'a str,
+    input: &'a str,
     scope: Option<Arc<Scope>>,
     context: &mut crate::Context,
     int: &I,
 ) -> Result<(Vec<Span>, bool), FendError> {
-    let debug = input.strip_prefix("!debug ").map_or(false, |remaining| {
-        input = remaining;
-        true
-    });
-    let value = evaluate_to_value(input, scope, context, int)?;
+    let (attrs, input) = parse_attrs(input);
+    let value = evaluate_to_value(input, scope, attrs, context, int)?;
     context.variables.insert("_".to_string(), value.clone());
     context.variables.insert("ans".to_string(), value.clone());
     Ok((
-        if debug {
+        if attrs.debug {
             vec![Span::from_string(format!("{:?}", value))]
         } else {
             let mut spans = vec![];
-            value.format(0, &mut spans, context, int)?;
+            value.format(0, &mut spans, attrs, context, int)?;
             spans
         },
         value.is_unit(),
