@@ -1,0 +1,26 @@
+[package]
+name = "fend-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+assert_fs = "1.0.3"
+
+[dependencies.fend-core]
+path = "../core"
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fend-fuzz"
+path = "fuzz_targets/fend-fuzz.rs"
+test = false
+doc = false

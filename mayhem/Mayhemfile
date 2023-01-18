@@ -1,0 +1,6 @@
+project: fend
+target: fend-fuzz
+
+cmds:
+    - cmd: ./fend-fuzz
+      libfuzzer: true
